@@ -26,52 +26,52 @@ const autenticarToken = (req, res, next) => {
   });
 };
 
-// Controlador de usuários
-const userController = {
-  // Método para login
-  login: async (req, res) => {
-    const { email, senha } = req.body;
+// // Controlador de usuários
+// const userController = {
+//   // Método para login
+//   login: async (req, res) => {
+//     const { email, senha } = req.body;
 
-    // Validação básica: verificar se email e senha foram fornecidos
-    if (!email || !senha) {
-      return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-    }
+//     // Validação básica: verificar se email e senha foram fornecidos
+//     if (!email || !senha) {
+//       return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+//     }
 
-    try {
-      // Busca o usuário no banco de dados com base no email
-      const usuario = await prisma.user.findUnique({ where: { email } });
+//     try {
+//       // Busca o usuário no banco de dados com base no email
+//       const usuario = await prisma.user.findUnique({ where: { email } });
 
-      // Se o usuário não for encontrado, retorna erro 404
-      if (!usuario) {
-        return res.status(404).json({ error: 'Usuário não encontrado' });
-      }
+//       // Se o usuário não for encontrado, retorna erro 404
+//       if (!usuario) {
+//         return res.status(404).json({ error: 'Usuário não encontrado' });
+//       }
 
-      // Verificar se a senha é correta
-      const senhaValida = await bcrypt.compare(senha, usuario.senha);
-      if (!senhaValida) {
-        return res.status(401).json({ error: 'Senha incorreta' });
-      }
+//       // Verificar se a senha é correta
+//       const senhaValida = await bcrypt.compare(senha, usuario.senha);
+//       if (!senhaValida) {
+//         return res.status(401).json({ error: 'Senha incorreta' });
+//       }
 
-      // Gerar token JWT
-      const token = jwt.sign(
-        { id: usuario.id, tipo: usuario.tipo },
-        'segredo_super_secreto', // Ideal usar variável de ambiente
-        { expiresIn: '1d' }
-      );
+//       // Gerar token JWT
+//       const token = jwt.sign(
+//         { id: usuario.id, tipo: usuario.tipo },
+//         'segredo_super_secreto', // Ideal usar variável de ambiente
+//         { expiresIn: '1d' }
+//       );
 
-      // Retornar token ao cliente
-      return res.status(200).json({ token });
-    } catch (error) {
-      // Caso ocorra algum erro no processo, retorna erro 500 (erro interno)
-      console.error('Erro no login:', error);
-      return res.status(500).json({ error: 'Erro ao realizar login' });
-    }
-  }
-};
-// Rota de teste (GET) - Apenas para verificar se a API está funcionando
-router.get('/', (req, res) => {
-  res.send('Rota de usuários funcionando!');
-});
+//       // Retornar token ao cliente
+//       return res.status(200).json({ token });
+//     } catch (error) {
+//       // Caso ocorra algum erro no processo, retorna erro 500 (erro interno)
+//       console.error('Erro no login:', error);
+//       return res.status(500).json({ error: 'Erro ao realizar login' });
+//     }
+//   }
+// };
+// // Rota de teste (GET) - Apenas para verificar se a API está funcionando
+// router.get('/', (req, res) => {
+//   res.send('Rota de usuários funcionando!');
+// });
 
 // Rota de cadastro (POST)
 router.post('/register', async (req, res) => {
@@ -96,31 +96,7 @@ router.post('/register', async (req, res) => {
     res.status(500).json({ error: 'Erro interno ao registrar usuário' });
   }
 });
-// Rota de login (POST)
-router.post('/login', userController.login);
 
-// Rota protegida: retornar dados do usuário logado
-router.get('/me', autenticarToken, async (req, res) => {
-  try {
-    const usuario = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: {
-        id: true,
-        nome: true,
-        email: true,
-        username: true,
-        tipo: true
-      }
-    });
-
-    if (!usuario) return res.status(404).json({ error: 'Usuário não encontrado' });
-
-    res.status(200).json(usuario);
-  } catch (error) {
-    console.error('Erro ao buscar dados do usuário:', error);
-    res.status(500).json({ error: 'Erro interno' });
-  }
-});
 
 
 module.exports = router;
